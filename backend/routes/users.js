@@ -1,14 +1,16 @@
 import express from "express";
-import User from "../models/User.js";
+import Student from "../models/Student.js";
+import bcrypt from 'bcrypt';
 
 const router = express.Router()
 
 /* Getting user by id */
-router.get("/getuser/:id", async (req, res) => {
+router.get("/getstudent/:id", async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).populate("activeTransactions").populate("prevTransactions")
-        const { password, updatedAt, ...other } = user._doc;
-        res.status(200).json(other);
+    const student = await Student.findById(req.params.id).populate("activeTransactions").populate("prevTransactions")
+    if(!student) return res.status(404).json({ message: 'Student not found' });
+    const { password, updatedAt, ...other } = student._doc;
+    res.status(200).json(other);
     } 
     catch (err) {
         return res.status(500).json(err);
@@ -16,10 +18,10 @@ router.get("/getuser/:id", async (req, res) => {
 })
 
 /* Getting all members in the library */
-router.get("/allmembers", async (req,res)=>{
+router.get("/allstudents", async (req,res)=>{
     try{
-        const users = await User.find({}).populate("activeTransactions").populate("prevTransactions").sort({_id:-1})
-        res.status(200).json(users)
+        const students = await Student.find({}).populate("activeTransactions").populate("prevTransactions").sort({_id:-1})
+        res.status(200).json(students)
     }
     catch(err){
         return res.status(500).json(err);
@@ -27,7 +29,7 @@ router.get("/allmembers", async (req,res)=>{
 })
 
 /* Update user by id */
-router.put("/updateuser/:id", async (req, res) => {
+router.put("/updatestudent/:id", async (req, res) => {
     if (req.body.userId === req.params.id || req.body.isAdmin) {
         if (req.body.password) {
             try {
@@ -38,10 +40,8 @@ router.put("/updateuser/:id", async (req, res) => {
             }
         }
         try {
-            const user = await User.findByIdAndUpdate(req.params.id, {
-                $set: req.body,
-            });
-            res.status(200).json("Account has been updated");
+            await Student.findByIdAndUpdate(req.params.id, { $set: req.body });
+            res.status(200).json("Student account has been updated");
         } catch (err) {
             return res.status(500).json(err);
         }
@@ -55,8 +55,8 @@ router.put("/updateuser/:id", async (req, res) => {
 router.put("/:id/move-to-activetransactions" , async (req,res)=>{
     if(req.body.isAdmin){
         try{
-            const user = await User.findById(req.body.userId);
-            await user.updateOne({$push:{activeTransactions:req.params.id}})
+            const student = await Student.findById(req.body.userId);
+            await student.updateOne({$push:{activeTransactions:req.params.id}})
             res.status(200).json("Added to Active Transaction")
         }
         catch(err){
@@ -72,9 +72,9 @@ router.put("/:id/move-to-activetransactions" , async (req,res)=>{
 router.put("/:id/move-to-prevtransactions", async (req,res)=>{
     if(req.body.isAdmin){
         try{
-            const user = await User.findById(req.body.userId);
-            await user.updateOne({$pull:{activeTransactions:req.params.id}})
-            await user.updateOne({$push:{prevTransactions:req.params.id}})
+            const student = await Student.findById(req.body.userId);
+            await student.updateOne({$pull:{activeTransactions:req.params.id}})
+            await student.updateOne({$push:{prevTransactions:req.params.id}})
             res.status(200).json("Added to Prev transaction Transaction")
         }
         catch(err){
@@ -87,11 +87,11 @@ router.put("/:id/move-to-prevtransactions", async (req,res)=>{
 })
 
 /* Delete user by id */
-router.delete("/deleteuser/:id", async (req, res) => {
+router.delete("/deletestudent/:id", async (req, res) => {
     if (req.body.userId === req.params.id || req.body.isAdmin) {
         try {
-            await User.findByIdAndDelete(req.params.id);
-            res.status(200).json("Account has been deleted");
+            await Student.findByIdAndDelete(req.params.id);
+            res.status(200).json("Student account has been deleted");
         } catch (err) {
             return res.status(500).json(err);
         }

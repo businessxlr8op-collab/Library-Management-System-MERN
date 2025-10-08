@@ -9,7 +9,7 @@ function ImageSlider() {
                 <Carousel.Item interval={1000}>
                     <img
                         className="d-block w-100"
-                        src="https://images.unsplash.com/photo-1616070152767-3eb99cf10509?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                        src="/assets/images/Picture1.jpg"
                         alt="First slide"
                     />
                     <Carousel.Caption>

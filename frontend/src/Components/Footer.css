@@ -1,8 +1,11 @@
 .footer {
   display: flex;
   flex-direction: column;
-  background-color: black;
-  color: wheat;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(6px) saturate(120%);
+  color: #e7eef8;
+  padding: 18px 12px;
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
 
 .footer-data {
@@ -38,11 +41,10 @@
 .contact-details h1,
 .usefull-links h1,
 .librarian-details h1 {
-  font-size: 25px;
-  color: rgb(235, 88, 75);
-  padding-bottom: 15px;
-  border-bottom-style: solid;
-  border-bottom-width: 3.1px;
+  font-size: 20px;
+  color: #cfe9ff;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255,255,255,0.04);
   width: fit-content;
 }
 

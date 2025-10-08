@@ -18,41 +18,62 @@ function Header() {
     }
 
     return (
-        <div className="header">
+        <header className="header" role="navigation" aria-label="Main navigation">
             <div className="logo-nav">
-            <Link to='/'>
-                <a href="#home">LIBRARY</a>
-            </Link>
+                <Link to='/' className="logo-link">
+                    <div className="logo-content">
+                        <img src="/assets/images/rmslogo.png" alt="RMS Logo" className="logo-image" />
+                        <div className="logo-text">
+                            <div className="logo-title">RMS HIGH SCHOOL BALICHELA</div>
+                            <div className="logo-sub">Digital Library</div>
+                        </div>
+                    </div>
+                </Link>
             </div>
+
             <div className='nav-right'>
-                <input className='search-input' type='text' placeholder='Search a Book'/>
+                <label htmlFor="site-search" className="sr-only">Search books</label>
+                <input id="site-search" className='search-input' type='search' placeholder='Search a Book' aria-label="Search books" />
+
                 <ul className={menutoggle ? "nav-options active" : "nav-options"}>
                     <li className="option" onClick={() => { closeMenu() }}>
-                        <Link to='/'>
-                            <a href="#home">Home</a>
+                        <Link to='/' className="nav-link">
+                            <span>Home</span>
                         </Link>
                     </li>
                     <li className="option" onClick={() => { closeMenu() }}>
-                        <Link to='/books'>
-                        <a href="#books">Books</a>
+                        <Link to='/books' className="nav-link">
+                            <span>Books</span>
                         </Link>
                     </li>
                     <li className="option" onClick={() => { closeMenu() }}>
-                        <Link to='/signin'>
-                        <a href='signin'>SignIn</a>
+                        <Link to='/about' className="nav-link">
+                            <span>About School</span>
+                        </Link>
+                    </li>
+                    <li className="option" onClick={() => { closeMenu() }}>
+                        <Link to='/contact' className="nav-link">
+                            <span>Contact</span>
+                        </Link>
+                    </li>
+                    <li className="option mobile-only" onClick={() => { closeMenu() }}>
+                        <Link to='/signin' className="nav-link">
+                            <span>Login</span>
                         </Link>
                     </li>
                 </ul>
+                {/* Login CTA kept outside of the nav <ul> to avoid clipping */}
+                <Link to="/signin" className="nav-cta" style={{ marginLeft: 8 }}>Login</Link>
             </div>
 
-            <div className="mobile-menu" onClick={() => { Toggle() }}>
+            <button className="mobile-menu" onClick={() => { Toggle() }} aria-label="Toggle menu">
                 {menutoggle ? (
-                    <ClearIcon className="menu-icon" style={{ fontSize: 40 }} />
+                    <ClearIcon className="menu-icon" style={{ fontSize: 34 }} />
                 ) : (
-                    <MenuIcon className="menu-icon" style={{ fontSize: 40 }} />
+                    <MenuIcon className="menu-icon" style={{ fontSize: 34 }} />
                 )}
-            </div>
-        </div>
+            </button>
+        </header>
     )
 }
 

@@ -12,25 +12,26 @@ function Signin() {
     const [error, setError] = useState("")
     const { dispatch } = useContext(AuthContext)
 
-    const API_URL = process.env.REACT_APP_API_URL
-    
     const loginCall = async (userCredential, dispatch) => {
         dispatch({ type: "LOGIN_START" });
         try {
-            const res = await axios.post(API_URL+"api/auth/signin", userCredential);
+            // use relative path so CRA proxy forwards to backend
+            const res = await axios.post('/api/auth/signin', userCredential);
             dispatch({ type: "LOGIN_SUCCESS", payload: res.data });
         }
         catch (err) {
             dispatch({ type: "LOGIN_FAILURE", payload: err })
-            setError("Wrong Password Or Username")
+            // try to show backend message when present
+            const msg = err && err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Wrong Password Or Username';
+            setError(msg);
         }
     }
 
     const handleForm = (e) => {
         e.preventDefault()
-        isStudent
-        ? loginCall({ admissionId, password }, dispatch)
-        : loginCall({ employeeId,password }, dispatch)
+        // backend expects `student_id` (or email). Map both admissionId/employeeId to student_id
+        const id = isStudent ? admissionId : employeeId;
+        loginCall({ student_id: id, password }, dispatch)
     }
 
     return (

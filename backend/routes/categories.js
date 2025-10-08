@@ -14,11 +14,10 @@ router.get("/allcategories", async (req, res) => {
 
 router.post("/addcategory", async (req, res) => {
   try {
-    const newcategory = await new BookCategory({
-      categoryName: req.body.categoryName,
-    });
-    const category = await newcategory.save();
-    res.status(200).json(category);
+  if(!req.body.isAdmin) return res.status(403).json({ message: 'Only admin can add categories' });
+  const newcategory = new BookCategory({ name: req.body.name, description: req.body.description });
+  const category = await newcategory.save();
+  res.status(200).json(category);
   } catch (err) {
     return res.status(504).json(err);
   }

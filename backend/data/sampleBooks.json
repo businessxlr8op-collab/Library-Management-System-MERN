@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "sample1",
+    "title": "Mathematics for Class 10",
+    "author": "RMS Publications",
+    "isbn": "MATH-10-001",
+    "category": "Academic Books",
+    "quantity": 5,
+    "available": 5,
+    "grade_level": "10",
+    "subject": "Mathematics",
+    "description": "Standard mathematics textbook for Class 10.",
+    "publication_year": 2020,
+    "cover_image": "/assets/images/bookcover.JPG",
+    "rack_location": "A1"
+  },
+  {
+    "_id": "sample2",
+    "title": "General Science",
+    "author": "Science Press",
+    "isbn": "SCI-001",
+    "category": "Science",
+    "quantity": 3,
+    "available": 2,
+    "grade_level": "9",
+    "subject": "Science",
+    "description": "Comprehensive science book for middle school.",
+    "publication_year": 2019,
+    "cover_image": "/assets/images/bookcover.JPG",
+    "rack_location": "B2"
+  }
+]

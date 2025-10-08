@@ -1,45 +1,16 @@
-import mongoose from "mongoose"
+import mongoose from 'mongoose';
 
 const BookTransactionSchema = new mongoose.Schema({
-    bookId: {
-        type: String,
-        require: true
-    },
-    borrowerId: { //EmployeeId or AdmissionId
-        type: String,
-        require: true
-    },
-    bookName: {
-        type: String,
-        require: true
-    },
-    borrowerName: {
-        type: String,
-        require: true
-    },
-    transactionType: { //Issue or Reservation
-        type: String,
-        require: true,
-    },
-    fromDate: {
-        type: String,
-        require: true,
-    },
-    toDate: {
-        type: String,
-        require: true,
-    },
-    returnDate: {
-        type: String
-    },
-    transactionStatus: {
-        type: String,
-        default: "Active"
-    }
-},
-    {
-        timestamps: true
-    }
-);
+    student_id: { type: String, required: true },
+    book_id: { type: String, required: true },
+    issue_date: { type: Date, required: true },
+    due_date: { type: Date, required: true },
+    return_date: { type: Date },
+    fine_amount: { type: Number, default: 0 },
+    issued_by: { type: String, default: '' },
+    returned_to: { type: String, default: '' },
+    transaction_type: { type: String, enum: ['Issue', 'Return', 'Renew'], required: true },
+    transaction_status: { type: String, default: 'Active' }
+}, { timestamps: true });
 
-export default mongoose.model("BookTransaction", BookTransactionSchema)
+export default mongoose.model('BookTransaction', BookTransactionSchema);

@@ -1,0 +1,9 @@
+(node:10916) [DEP0170] DeprecationWarning: The URL mongodb://satyamsharma58025:vkKiPfjfb0rRxlIP@cluster0-shard-00-02.bdgjs.mongodb.net:27017,cluster0-shard-00-01.bdgjs.mongodb.net:27017,cluster0-shard-00-00.bdgjs.mongodb.net:27017/rms_library?authSource=admin&replicaSet=atlas-129ciu-shard-0&retryWrites=true&w=majority&appName=Cluster0&ssl=true is invalid. Future versions of Node.js will throw an error.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:10916) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
+(node:11680) [DEP0170] DeprecationWarning: The URL mongodb://satyamsharma58025:vkKiPfjfb0rRxlIP@cluster0-shard-00-02.bdgjs.mongodb.net:27017,cluster0-shard-00-01.bdgjs.mongodb.net:27017,cluster0-shard-00-00.bdgjs.mongodb.net:27017/test?authSource=admin&replicaSet=atlas-129ciu-shard-0&retryWrites=true&w=majority&appName=Cluster0&ssl=true is invalid. Future versions of Node.js will throw an error.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:11680) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
+(node:15062) [DEP0170] DeprecationWarning: The URL mongodb://satyamsharma58025:vkKiPfjfb0rRxlIP@cluster0-shard-00-01.bdgjs.mongodb.net:27017,cluster0-shard-00-00.bdgjs.mongodb.net:27017,cluster0-shard-00-02.bdgjs.mongodb.net:27017/test?authSource=admin&replicaSet=atlas-129ciu-shard-0&retryWrites=true&w=majority&appName=Cluster0&ssl=true is invalid. Future versions of Node.js will throw an error.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:15062) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.

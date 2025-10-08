@@ -38,7 +38,7 @@ function AddTransaction() {
         e.preventDefault()
         setIsLoading(true)
         if (bookId !== "" && borrowerId !== "" && transactionType !== "" && fromDate !== null && toDate !== null) {
-            const borrower_details = await axios.get(API_URL + "api/users/getuser/" + borrowerId)
+        const borrower_details = await axios.get(API_URL + "api/students/getstudent/" + borrowerId)
             const book_details = await axios.get(API_URL + "api/books/getbook/" + bookId)
             
             /* Checking weather the book is available or not */
@@ -58,7 +58,7 @@ function AddTransaction() {
                     if (recentTransactions.length >= 5) {
                         (recentTransactions.splice(-1))
                     }
-                    await axios.put(API_URL + `api/users/${response.data._id}/move-to-activetransactions`, {
+                    await axios.put(API_URL + `api/students/${response.data._id}/move-to-activetransactions`, {
                         userId: borrowerId,
                         isAdmin: user.isAdmin
                     })
@@ -114,7 +114,7 @@ function AddTransaction() {
         const getBorrowerDetails = async () => {
             try {
                 if (borrowerId !== "") {
-                    const response = await axios.get(API_URL + "api/users/getuser/" + borrowerId)
+                    const response = await axios.get(API_URL + "api/students/getstudent/" + borrowerId)
                     setBorrowerDetails(response.data)
                 }
             }
@@ -130,7 +130,7 @@ function AddTransaction() {
     useEffect(() => {
         const getMembers = async () => {
             try {
-                const response = await axios.get(API_URL + "api/users/allmembers")
+                const response = await axios.get(API_URL + "api/students/allstudents")
                 const all_members = await response.data.map(member => (
                     { value: `${member?._id}`, text: `${member?.userType === "Student" ? `${member?.userFullName}[${member?.admissionId}]` : `${member?.userFullName}[${member?.employeeId}]`}` }
                 ))

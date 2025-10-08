@@ -23,7 +23,7 @@ function Return() {
     useEffect(() => {
         const getMembers = async () => {
             try {
-                const response = await axios.get(API_URL + "api/users/allmembers")
+                const response = await axios.get(API_URL + "api/students/allstudents")
                 setAllMembersOptions(response.data.map((member) => (
                     { value: `${member?._id}`, text: `${member?.userType === "Student" ? `${member?.userFullName}[${member?.admissionId}]` : `${member?.userFullName}[${member?.employeeId}]`}` }
                 )))
@@ -65,18 +65,18 @@ function Return() {
             })
 
             /* Getting borrower points alreadt existed */
-            const borrowerdata = await axios.get(API_URL+"api/users/getuser/"+borrowerId)
+            const borrowerdata = await axios.get(API_URL+"api/students/getstudent/"+borrowerId)
             const points = borrowerdata.data.points
 
             /* If the number of days after dueDate is greater than zero then decreasing points by 10 else increase by 10*/
             if(due > 0){
-                await axios.put(API_URL+"api/users/updateuser/"+borrowerId,{
+                await axios.put(API_URL+"api/students/updatestudent/"+borrowerId,{
                     points:points-10,
                     isAdmin: user.isAdmin
                 })
             }
             else if(due<=0){
-                await axios.put(API_URL+"api/users/updateuser/"+borrowerId,{
+                await axios.put(API_URL+"api/students/updatestudent/"+borrowerId,{
                     points:points+10,
                     isAdmin: user.isAdmin
                 })
@@ -89,7 +89,7 @@ function Return() {
             })
 
             /* Pulling out the transaction id from user active Transactions and pushing to Prev Transactions */
-            await axios.put(API_URL + `api/users/${transactionId}/move-to-prevtransactions`, {
+            await axios.put(API_URL + `api/students/${transactionId}/move-to-prevtransactions`, {
                 userId: borrowerId,
                 isAdmin: user.isAdmin
             })

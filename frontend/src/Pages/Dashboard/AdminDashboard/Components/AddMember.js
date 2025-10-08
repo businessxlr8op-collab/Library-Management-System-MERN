@@ -36,7 +36,7 @@ function AddMember() {
         { value: 'Student', text: 'Student' }
     ]
 
-    //Add a Member
+    //Add a Student
     const addMember = async (e) => {
         e.preventDefault()
         setIsLoading(true)
@@ -88,7 +88,7 @@ function AddMember() {
     useEffect(() => {
         const getMembers = async () => {
             try {
-                const response = await axios.get(API_URL + "api/users/allmembers")
+                const response = await axios.get(API_URL + "api/students/allstudents")
                 const recentMembers = await response.data.slice(0, 5)
                 setRecentAddedMembers(recentMembers)
             }

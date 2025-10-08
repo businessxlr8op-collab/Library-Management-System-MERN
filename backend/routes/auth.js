@@ -1,62 +1,51 @@
 import express from "express";
-import User from "../models/User.js";
+import Student from "../models/Student.js";
 import bcrypt from "bcrypt";
 
 const router = express.Router();
 
-/* User Registration */
+/* Student Registration (Admin can create students) */
 router.post("/register", async (req, res) => {
   try {
-    /* Salting and Hashing the Password */
     const salt = await bcrypt.genSalt(10);
-    const hashedPass = await bcrypt.hash(req.body.password, salt);
+    const hashedPass = await bcrypt.hash(req.body.password || 'changeme123', salt);
 
-    /* Create a new user */
-    const newuser = await new User({
-      userType: req.body.userType,
-      userFullName: req.body.userFullName,
-      admissionId: req.body.admissionId,
-      employeeId: req.body.employeeId,
-      age: req.body.age,
-      dob: req.body.dob,
-      gender: req.body.gender,
-      address: req.body.address,
-      mobileNumber: req.body.mobileNumber,
+    // auto-generate student_id if not provided
+    const nextId = req.body.student_id || `RMS${new Date().getFullYear()}${Math.floor(Math.random() * 9000 + 1000)}`;
+
+    const newStudent = new Student({
+      student_id: nextId,
+      name: req.body.name,
+      class: req.body.class,
+      section: req.body.section,
+      roll_number: req.body.roll_number,
       email: req.body.email,
+      phone: req.body.phone,
+      parent_contact: req.body.parent_contact,
+      address: req.body.address,
       password: hashedPass,
-      isAdmin: req.body.isAdmin,
+      isAdmin: req.body.isAdmin || false
     });
 
-    /* Save User and Return */
-    const user = await newuser.save();
-    res.status(200).json(user);
+    const student = await newStudent.save();
+    res.status(200).json(student);
   } catch (err) {
     console.log(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-/* User Login */
+/* Student Login */
 router.post("/signin", async (req, res) => {
   try {
-    console.log(req.body, "req");
-    const user = req.body.admissionId
-      ? await User.findOne({
-          admissionId: req.body.admissionId,
-        })
-      : await User.findOne({
-          employeeId: req.body.employeeId,
-        });
-
-    console.log(user, "user");
-
-    !user && res.status(404).json("User not found");
-
-    const validPass = await bcrypt.compare(req.body.password, user.password);
-    !validPass && res.status(400).json("Wrong Password");
-
-    res.status(200).json(user);
+    const student = await Student.findOne({ student_id: req.body.student_id }) || await Student.findOne({ email: req.body.email });
+    if(!student) return res.status(404).json({ message: 'Student not found' });
+    const validPass = await bcrypt.compare(req.body.password, student.password);
+    if(!validPass) return res.status(400).json({ message: 'Wrong password' });
+    res.status(200).json(student);
   } catch (err) {
     console.log(err);
+    res.status(500).json({ error: err.message });
   }
 });
 

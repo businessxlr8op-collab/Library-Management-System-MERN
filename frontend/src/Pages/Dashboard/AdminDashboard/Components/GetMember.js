@@ -1,73 +1,121 @@
 import React, { useEffect, useState } from 'react'
 import "../AdminDashboard.css"
 import axios from "axios"
-import { Dropdown } from 'semantic-ui-react'
 import '../../MemberDashboard/MemberDashboard.css'
 import moment from "moment"
+import './GetMember.css'
 
 function GetMember() {
 
-    const API_URL = process.env.REACT_APP_API_URL
+    // use relative API paths so CRA proxy forwards correctly
+    const API = '/api';
 
     const [allMembersOptions, setAllMembersOptions] = useState(null)
     const [memberId, setMemberId] = useState(null)
     const [memberDetails, setMemberDetails] = useState(null)
+    const [studentsByClass, setStudentsByClass] = useState({})
+    const [selectedClass, setSelectedClass] = useState('9')
+
+    // ensure classes 1..12 plus Unclassified exist in UI
+    const STANDARD_CLASSES = ['Unclassified', '1','2','3','4','5','6','7','8','9','10','11','12']
 
     //Fetch Members
     useEffect(() => {
         const getMembers = async () => {
             try {
-                const response = await axios.get(API_URL + "api/users/allmembers")
-                setAllMembersOptions(response.data.map((member) => (
-                    { value: `${member?._id}`, text: `${member?.userType === "Student" ? `${member?.userFullName}[${member?.admissionId}]` : `${member?.userFullName}[${member?.employeeId}]`}` }
+                const response = await axios.get(API + '/students/allstudents')
+                const students = response.data || []
+
+                // Build dropdown options (kept for quick search)
+                setAllMembersOptions(students.map((member) => (
+                    { value: `${member?._id}`, text: `${member?.name || member?.userFullName || 'Member'} [${member?.student_id || member?.admissionId || ''}]` }
                 )))
+
+                // Group students by their class (class field may be "class" or "grade_level")
+                const groups = {};
+                for (const s of students) {
+                    const cls = (s.class || s.grade_level || s.class_level || 'Unclassified') || 'Unclassified'
+                    const key = String(cls).trim() || 'Unclassified'
+                    if (!groups[key]) groups[key] = []
+                    groups[key].push(s)
+                }
+
+                // Ensure all standard classes exist so UI shows tabs even if empty
+                for (const c of STANDARD_CLASSES) if (!groups[c]) groups[c] = []
+
+                setStudentsByClass(groups)
+                // if there are no students in selectedClass, keep default '9' but will show empty list
             }
             catch (err) {
                 console.log(err)
             }
         }
         getMembers()
-    }, [API_URL])
+    }, [])
 
 
     useEffect(() => {
         const getMemberDetails = async () => {
             if(memberId !== null){
                 try {
-                    const response = await axios.get(API_URL + "api/users/getuser/" + memberId)
+                    const response = await axios.get(API + '/students/getstudent/' + memberId)
                     setMemberDetails(response.data)
                 }
                 catch (err) {
-                    console.log("Error in fetching the member details")
+                    console.log("Error in fetching the member details", err)
                 }
             }
         }
         getMemberDetails()
-    }, [API_URL, memberId])
+    }, [memberId])
 
 
     return (
         <div>
             <div className='semanticdropdown getmember-dropdown'>
-                <Dropdown
-                    placeholder='Select Member'
-                    fluid
-                    search
-                    selection
-                    value={memberId}
-                    options={allMembersOptions}
-                    onChange={(event, data) => setMemberId(data.value)}
-                />
+                    <div className='getmember-grid'>
+                        <aside className='class-column'>
+                            <h4>Classes</h4>
+                            <ul>
+                                {STANDARD_CLASSES.map((c) => (
+                                    <li key={c} className={selectedClass === String(c) ? 'active' : ''} onClick={() => setSelectedClass(String(c))}>
+                                        {c}
+                                    </li>
+                                ))}
+                            </ul>
+                        </aside>
+
+                        <section className='students-column'>
+                            <div className='students-header'>
+                                <h4>Students — Class {selectedClass}</h4>
+                                <div className='students-count'>{(studentsByClass[selectedClass] || []).length} students</div>
+                            </div>
+                            <div className='student-list'>
+                                {(studentsByClass[selectedClass] || []).length === 0 ? (
+                                    <div className='empty-msg'>No students in this class.</div>
+                                ) : (
+                                    <ul>
+                                        {(studentsByClass[selectedClass] || []).map((s) => (
+                                            <li key={s._id} onClick={() => setMemberId(s._id)} className={memberId === s._id ? 'selected' : ''}>
+                                                <div className='student-name'>{s.name}</div>
+                                                <div className='student-meta'>{s.student_id || s.admissionId || ''} • {s.class || s.grade_level || 'Unclassified'}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        </section>
+                    </div>
             </div>
             <div style={memberId === null ? { display: "none" } : {}}>
                 <div className="member-profile-content" id="profile@member" style={memberId === null ? { display: "none" } : {}}>
                     <div className="user-details-topbar">
                         <img className="user-profileimage" src="./assets/images/Profile.png" alt=""></img>
                         <div className="user-info">
-                            <p className="user-name">{memberDetails?.userFullName}</p>
-                            <p className="user-id">{memberDetails?.userType === "Student" ? memberDetails?.admissionId : memberDetails?.employeeId}</p>
+                            <p className="user-name">{memberDetails?.name || memberDetails?.userFullName}</p>
+                            <p className="user-id">{memberDetails?.student_id || memberDetails?.admissionId || memberDetails?.employeeId}</p>
                             <p className="user-email">{memberDetails?.email}</p>
-                            <p className="user-phone">{memberDetails?.mobileNumber}</p>
+                            <p className="user-phone">{memberDetails?.phone || memberDetails?.mobileNumber}</p>
                         </div>
                     </div>
                     <div className="user-details-specific">
