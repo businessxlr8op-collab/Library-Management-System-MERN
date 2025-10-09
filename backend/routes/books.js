@@ -18,11 +18,21 @@ router.get('/', async (req, res) => {
 
         const query = {};
         if (search) {
+            // search across multiple name/title fields and author/isbn
             query.$or = [
                 { title: { $regex: search, $options: 'i' } },
+                { name: { $regex: search, $options: 'i' } },
+                { bookTitle: { $regex: search, $options: 'i' } },
+                { book_name: { $regex: search, $options: 'i' } },
                 { author: { $regex: search, $options: 'i' } },
-                { isbn: { $regex: search, $options: 'i' } }
+                { authors: { $regex: search, $options: 'i' } },
+                { isbn: { $regex: search, $options: 'i' } },
+                { ISBN: { $regex: search, $options: 'i' } }
             ];
+            // if search looks numeric, also match slNo / serial number fields
+            if (/^\d+$/.test(search)) {
+                query.$or.push({ slNo: Number(search) });
+            }
         }
         if (category) query.category = category;
         if (grade) query.grade_level = grade;

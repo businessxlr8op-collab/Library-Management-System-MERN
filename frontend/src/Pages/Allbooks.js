@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useHistory } from 'react-router-dom';
 import './Allbooks.css';
 import { bookService } from '../api/bookService';
 
@@ -19,12 +20,24 @@ function Allbooks() {
 
   
 
-  // Fetch full dataset when searchTerm changes (or on mount)
+  const location = useLocation();
+  const history = useHistory();
+
+  // On mount, set searchTerm from URL query param `search` (one time)
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchQuery = params.get('search') || '';
+    setSearchTerm(searchQuery);
     setPage(1);
+    // Only run once on mount
+    // eslint-disable-next-line
+  }, []);
+
+  // Fetch books when searchTerm or page changes
+  useEffect(() => {
     fetchBooks();
     // eslint-disable-next-line
-  }, [searchTerm]);
+  }, [searchTerm, page]);
 
   // Recompute visible books when page, categoryFilter or allBooks change
   useEffect(() => {
@@ -36,11 +49,12 @@ function Allbooks() {
   }, [page, categoryFilter, allBooks]);
 
   const fetchBooks = async () => {
+    console.log('Fetching books for search:', searchTerm);
     try {
       setLoading(true);
       setError(null);
       // Request entire dataset from backend (uses ?all=true)
-      const resp = await bookService.getAllBooks({ all: true, search: searchTerm });
+  const resp = await bookService.getAllBooks({ all: true, search: searchTerm });
       if (resp && resp.success) {
         // Normalize documents from server to the shape the UI expects
         const normalized = (resp.data || []).map((doc) => ({
@@ -103,6 +117,7 @@ function Allbooks() {
   setAllBooks(deduped);
         // totalBooks and pagination are handled in the page/category effect
         setTotalBooks(deduped.length);
+        // Only update URL when user changes search input (not on every fetch)
       } else {
         setError(resp && resp.message ? resp.message : 'Failed to fetch books');
       }
@@ -119,6 +134,9 @@ function Allbooks() {
   return (
     <div className="allbooks-container">
       <h1>RMS High School Balichela - Digital Library</h1>
+      <div style={{marginBottom: '8px', color: '#c00', fontWeight: 'bold'}}>
+        Debug: Search term = "{searchTerm}", Books found = {allBooks.length}
+      </div>
       <div className="search-container">
         <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
           <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}>
@@ -127,7 +145,23 @@ function Allbooks() {
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
-          <input style={{flex: 1}} type="text" placeholder="Search by title or author" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }} />
+          <input
+            style={{flex: 1}}
+            type="text"
+            placeholder="Search by title or author"
+            value={searchTerm}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSearchTerm(val);
+              setPage(1);
+              // Update URL to reflect search
+              const params = new URLSearchParams(location.search);
+              if (val && val.trim()) params.set('search', val.trim());
+              else params.delete('search');
+              const qs = params.toString();
+              history.replace(`/books${qs ? `?${qs}` : ''}`);
+            }}
+          />
         </div>
       </div>
 
