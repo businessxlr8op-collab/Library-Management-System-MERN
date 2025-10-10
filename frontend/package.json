@@ -8,7 +8,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "axios": "^0.21.1",
+    "axios": "^1.12.2",
     "bootstrap": "^4.6.0",
     "moment": "^2.29.1",
     "react": "^17.0.2",
@@ -18,13 +18,13 @@
     "react-dom": "^17.0.2",
     "react-multi-select-component": "^4.0.3",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.3",
+    "react-scripts": "^5.0.1",
     "semantic-ui-react": "^2.0.3",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-  "start": "react-scripts --openssl-legacy-provider start",
-  "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
+    "start": "react-scripts --openssl-legacy-provider start",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
