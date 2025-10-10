@@ -51,8 +51,7 @@ function GetMember() {
             }
         }
         getMembers()
-    }, [])
-
+    }, [STANDARD_CLASSES])
 
     useEffect(() => {
         const getMemberDetails = async () => {

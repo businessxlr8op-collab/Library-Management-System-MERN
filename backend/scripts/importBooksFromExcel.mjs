@@ -1,3 +1,33 @@
+// Reference mapping for almirahNo and category
+const ALMIRAH_CATEGORY_MAP = {
+  '1': 'FICTIONS',
+  '2': 'ISC BOOKS',
+  '3': 'MATHEMATICS',
+  '4': 'SCIENCE',
+  '5': 'ENGLISH',
+  '6': 'HINDI LITERATURE',
+  '7': 'HINDI LANGUAGE',
+  '8': 'SOCIAL SCIENCE',
+  '9': 'SPRITUAL/ PRE-PRIMARY',
+};
+
+// Helper to map category/almirah based on keywords
+function getAlmirahCategoryFromRow(row) {
+  // Try to infer almirahNo from category or subject
+  const categoryRaw = (row['Category'] || row['Subject'] || '').toString().toLowerCase();
+  for (const [almirahNo, cat] of Object.entries(ALMIRAH_CATEGORY_MAP)) {
+    if (categoryRaw.includes(cat.toLowerCase())) {
+      return { almirahNo, category: cat };
+    }
+  }
+  // Fallback: use provided almirahNo if valid
+  const almirahNoRaw = (row['Almirah No'] || row['AlmirahNo'] || row['almirahNo'] || '').toString().trim();
+  if (ALMIRAH_CATEGORY_MAP[almirahNoRaw]) {
+    return { almirahNo: almirahNoRaw, category: ALMIRAH_CATEGORY_MAP[almirahNoRaw] };
+  }
+  // No match, return empty
+  return { almirahNo: '', category: categoryRaw };
+}
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import path from 'path';
@@ -11,25 +41,26 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const excelPath = process.env.IMPORT_FILE || path.resolve(process.cwd(), '../frontend/public/library books( 4618)_095733.xlsx');
 
 function mapRowToBook(row) {
-  // Map common column names. If your sheet uses different headers, adjust these keys.
+  // Map and normalize almirah/category
+  const { almirahNo, category } = getAlmirahCategoryFromRow(row);
   return {
     title: row['Title'] || row['Book Title'] || row['title'] || row['Book Name'] || 'Untitled',
     author: row['Author'] || row['Authors'] || 'Unknown',
     isbn: row['ISBN'] || row['Isbn'] || '',
-    category: row['Category'] || row['Subject'] || '',
+    category,
     quantity: Number(row['Quantity'] || row['quantity'] || row['Qty'] || 1) || 1,
     available: Number(row['Available'] || row['available'] || row['available_count'] || 1) || 1,
     slNo: Number(row['slNo'] || row['SL No'] || row['S.No'] || row['Sr No'] || '') || undefined,
-  isAvailable: (typeof row['isAvailable'] !== 'undefined') ? Boolean(row['isAvailable']) : (typeof row['isAvailable'] === 'string' ? row['isAvailable'].toLowerCase() === 'true' : undefined),
+    isAvailable: (typeof row['isAvailable'] !== 'undefined') ? Boolean(row['isAvailable']) : (typeof row['isAvailable'] === 'string' ? row['isAvailable'].toLowerCase() === 'true' : undefined),
     grade_level: row['Class'] || row['Grade'] || row['class'] || '',
     subject: row['Subject'] || '',
     description: row['Description'] || '',
     publication_year: Number(row['Publication Year'] || row['Year'] || '') || null,
     publication: row['Publication'] || row['Publisher'] || '',
     edition: row['Edition'] || '',
-    almirahNo: row['Almirah No'] || row['AlmirahNo'] || row['almirahNo'] || '',
+    almirahNo,
     reckNo: row['Rack No'] || row['reckNo'] || row['RackNo'] || '',
-  addedOn: row['Added On'] ? new Date(row['Added On']) : (row['addedOn'] ? new Date(row['addedOn']) : undefined),
+    addedOn: row['Added On'] ? new Date(row['Added On']) : (row['addedOn'] ? new Date(row['addedOn']) : undefined),
     price: row['Price'] ? Number(row['Price']) : null,
     book_condition: row['Condition'] || row['Book Condition'] || '',
   };
