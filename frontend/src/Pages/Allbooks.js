@@ -1,3 +1,10 @@
+
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useHistory } from "react-router-dom";
+import { bookService } from "../api/bookService";
+import SearchBar from "../Components/SearchBar";
+import "./Allbooks.css"; // optional, inline styles below override if needed
+
 // Almirah/category mapping for display
 const ALMIRAH_CATEGORY_MAP = {
   '1': 'FICTIONS',
@@ -10,12 +17,6 @@ const ALMIRAH_CATEGORY_MAP = {
   '8': 'SOCIAL SCIENCE',
   '9': 'SPRITUAL/ PRE-PRIMARY',
 };
-// Allbooks.jsx
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useHistory } from "react-router-dom";
-import { bookService } from "../api/bookService";
-import SearchBar from "../Components/SearchBar";
-import "./Allbooks.css"; // optional, inline styles below override if needed
 
 const DEFAULT_COVER = "/bookcover.png";
 
@@ -85,11 +86,21 @@ function Allbooks() {
                   break;
                 }
               }
-              // If still not mapped, blank out
-              if (!ALMIRAH_CATEGORY_MAP[almirahNo]) {
-                almirahNo = '';
-                category = '';
+            }
+            // If still not mapped, try to infer from category exact match
+            if (!almirahNo && category) {
+              for (const [refNo, refCat] of Object.entries(ALMIRAH_CATEGORY_MAP)) {
+                if (category.toLowerCase() === refCat.toLowerCase()) {
+                  almirahNo = refNo;
+                  category = refCat;
+                  break;
+                }
               }
+            }
+            // If still not mapped, blank out
+            if (!ALMIRAH_CATEGORY_MAP[almirahNo]) {
+              almirahNo = '';
+              category = '';
             }
             return {
               _id: doc._id || doc.bookId || `${Math.random().toString(36).slice(2, 9)}`,
