@@ -3,7 +3,7 @@ import axios from 'axios';
 // Simple and straightforward API configuration
 // In production (Netlify): uses REACT_APP_API_URL from environment variables
 // In development (local): falls back to localhost:5000
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL ;
 
 const api = axios.create({
   baseURL: API_URL,
