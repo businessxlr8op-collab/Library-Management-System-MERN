@@ -10,77 +10,55 @@ function AddBook() {
     const [isLoading, setIsLoading] = useState(false)
     const { user } = useContext(AuthContext)
 
-    const [bookName, setBookName] = useState("")
-    const [alternateTitle, setAlternateTitle] = useState("")
-    const [author, setAuthor] = useState("")
-    const [bookCountAvailable, setBookCountAvailable] = useState(null)
-    const [language, setLanguage] = useState("")
-    const [publisher, setPublisher] = useState("")
-    const [allCategories, setAllCategories] = useState([])
-    const [selectedCategories, setSelectedCategories] = useState([])
-    const [recentAddedBooks, setRecentAddedBooks] = useState([])
+    const [title, setTitle] = useState("");
+    const [author, setAuthor] = useState("");
+    const [available, setAvailable] = useState(1);
+    const [category, setCategory] = useState("");
+    const [almirahNo, setAlmirahNo] = useState("");
+    const [recentAddedBooks, setRecentAddedBooks] = useState([]);
 
 
     /* Fetch all the Categories */
-    useEffect(() => {
-        const getAllCategories = async () => {
-            try {
-                const response = await axios.get(API_URL + "api/categories/allcategories")
-                const all_categories = await response.data.map(category => (
-                    { value: `${category._id}`, text: `${category.categoryName}` }
-                ))
-                setAllCategories(all_categories)
-            }
-            catch (err) {
-                console.log(err)
-            }
-        }
-        getAllCategories()
-    }, [API_URL])
+    // No need for categories fetch, use category and almirahNo directly
 
     /* Adding book function */
     const addBook = async (e) => {
-        e.preventDefault()
-        setIsLoading(true)
+        e.preventDefault();
+        setIsLoading(true);
         const BookData = {
-            bookName: bookName,
-            alternateTitle: alternateTitle,
-            author: author,
-            bookCountAvailable: bookCountAvailable,
-            language: language,
-            publisher: publisher,
-            categories: selectedCategories,
+            title,
+            author,
+            available: Number(available),
+            category,
+            almirahNo,
             isAdmin: user.isAdmin
-        }
+        };
         try {
-            const response = await axios.post(API_URL + "api/books/addbook", BookData)
+            const response = await axios.post(API_URL + "api/books", BookData);
             if (recentAddedBooks.length >= 5) {
-                recentAddedBooks.splice(-1)
+                recentAddedBooks.splice(-1);
             }
-            setRecentAddedBooks([response.data, ...recentAddedBooks])
-            setBookName("")
-            setAlternateTitle("")
-            setAuthor("")
-            setBookCountAvailable(null)
-            setLanguage("")
-            setPublisher("")
-            setSelectedCategories([])
-            alert("Book Added Successfully 🎉")
+            setRecentAddedBooks([response.data, ...recentAddedBooks]);
+            setTitle("");
+            setAuthor("");
+            setAvailable(1);
+            setCategory("");
+            setAlmirahNo("");
+            alert("Book Added Successfully 🎉");
+        } catch (err) {
+            console.log(err);
         }
-        catch (err) {
-            console.log(err)
-        }
-        setIsLoading(false)
-    }
+        setIsLoading(false);
+    };
 
 
     useEffect(() => {
         const getallBooks = async () => {
-            const response = await axios.get(API_URL + "api/books/allbooks")
-            setRecentAddedBooks(response.data.slice(0, 5))
-        }
-        getallBooks()
-    }, [API_URL])
+            const response = await axios.get(API_URL + "api/books?all=true");
+            setRecentAddedBooks(response.data.data.slice(0, 5));
+        };
+        getallBooks();
+    }, [API_URL]);
 
 
     return (
@@ -88,39 +66,16 @@ function AddBook() {
             <p className="dashboard-option-title">Add a Book</p>
             <div className="dashboard-title-line"></div>
             <form className='addbook-form' onSubmit={addBook}>
-
-                <label className="addbook-form-label" htmlFor="bookName">Book Name<span className="required-field">*</span></label><br />
-                <input className="addbook-form-input" type="text" name="bookName" value={bookName} onChange={(e) => { setBookName(e.target.value) }} required></input><br />
-
-                <label className="addbook-form-label" htmlFor="alternateTitle">AlternateTitle</label><br />
-                <input className="addbook-form-input" type="text" name="alternateTitle" value={alternateTitle} onChange={(e) => { setAlternateTitle(e.target.value) }}></input><br />
-
+                <label className="addbook-form-label" htmlFor="title">Book Title<span className="required-field">*</span></label><br />
+                <input className="addbook-form-input" type="text" name="title" value={title} onChange={(e) => { setTitle(e.target.value) }} required></input><br />
                 <label className="addbook-form-label" htmlFor="author">Author Name<span className="required-field">*</span></label><br />
                 <input className="addbook-form-input" type="text" name="author" value={author} onChange={(e) => { setAuthor(e.target.value) }} required></input><br />
-
-                <label className="addbook-form-label" htmlFor="language">Language</label><br />
-                <input className="addbook-form-input" type="text" name="language" value={language} onChange={(e) => { setLanguage(e.target.value) }}></input><br />
-
-                <label className="addbook-form-label" htmlFor="publisher">Publisher</label><br />
-                <input className="addbook-form-input" type="text" name="publisher" value={publisher} onChange={(e) => { setPublisher(e.target.value) }}></input><br />
-
-                <label className="addbook-form-label" htmlFor="copies">No.of Copies Available<span className="required-field">*</span></label><br />
-                <input className="addbook-form-input" type="text" name="copies" value={bookCountAvailable} onChange={(e) => { setBookCountAvailable(e.target.value) }} required></input><br />
-
-                <label className="addbook-form-label" htmlFor="categories">Categories<span className="required-field">*</span></label><br />
-                <div className="semanticdropdown">
-                    <Dropdown
-                        placeholder='Category'
-                        fluid
-                        multiple
-                        search
-                        selection
-                        options={allCategories}
-                        value={selectedCategories}
-                        onChange={(event, value) => setSelectedCategories(value.value)}
-                    />
-                </div>
-
+                <label className="addbook-form-label" htmlFor="available">No. of Copies Available<span className="required-field">*</span></label><br />
+                <input className="addbook-form-input" type="number" name="available" value={available} onChange={(e) => { setAvailable(e.target.value) }} required></input><br />
+                <label className="addbook-form-label" htmlFor="category">Category<span className="required-field">*</span></label><br />
+                <input className="addbook-form-input" type="text" name="category" value={category} onChange={(e) => { setCategory(e.target.value) }} required></input><br />
+                <label className="addbook-form-label" htmlFor="almirahNo">Almirah No<span className="required-field">*</span></label><br />
+                <input className="addbook-form-input" type="text" name="almirahNo" value={almirahNo} onChange={(e) => { setAlmirahNo(e.target.value) }} required></input><br />
                 <input className="addbook-submit" type="submit" value="SUBMIT" disabled={isLoading}></input>
             </form>
             <div>

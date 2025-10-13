@@ -38,13 +38,15 @@ import Book from '../models/Book.js';
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 // allow override of the path to the Excel file via IMPORT_FILE env var
-const excelPath = process.env.IMPORT_FILE || path.resolve(process.cwd(), '../frontend/public/library books( 4618)_095733.xlsx');
+const excelPath = process.env.IMPORT_FILE || '/workspaces/Library-Management-System-MERN/frontend/public/lib.xlsx';
 
 function mapRowToBook(row) {
   // Map and normalize almirah/category
   const { almirahNo, category } = getAlmirahCategoryFromRow(row);
+  const title = row['Title'] || row['Book Title'] || row['title'] || row['Book Name'];
+  if (!title || title.toString().trim() === '') return null; // skip rows with no title
   return {
-    title: row['Title'] || row['Book Title'] || row['title'] || row['Book Name'] || 'Untitled',
+    title,
     author: row['Author'] || row['Authors'] || 'Unknown',
     isbn: row['ISBN'] || row['Isbn'] || '',
     category,
@@ -90,16 +92,9 @@ async function main() {
   let inserted = 0;
   for (const row of rows) {
     const doc = mapRowToBook(row);
+    if (!doc) continue; // skip rows with no title
     try {
-      // Prefer upsert by ISBN when available; otherwise fallback to title+slNo
-      const query = {};
-      if (row['ISBN'] || row['Isbn'] || row['isbn']) {
-        query.isbn = String(row['ISBN'] || row['Isbn'] || row['isbn']).trim();
-      } else {
-        if (doc.slNo) query.slNo = doc.slNo;
-        if (doc.title) query.title = doc.title;
-      }
-      await Book.updateOne(query, { $set: doc }, { upsert: true });
+      await Book.create(doc);
       inserted += 1;
       if (inserted % 100 === 0) process.stdout.write(`Imported ${inserted}\r`);
     } catch (e) {

@@ -23,50 +23,41 @@ function GetMember() {
     useEffect(() => {
         const getMembers = async () => {
             try {
-                const response = await axios.get(API + '/students/allstudents')
-                const students = response.data || []
-
-                // Build dropdown options (kept for quick search)
+                const response = await axios.get(API + '/students/allstudents');
+                const students = response.data || [];
                 setAllMembersOptions(students.map((member) => (
-                    { value: `${member?._id}`, text: `${member?.name || member?.userFullName || 'Member'} [${member?.student_id || member?.admissionId || ''}]` }
-                )))
-
+                    { value: `${member?._id}`, text: `${member?.userFullName || member?.name || 'Member'} [${member?.admissionId || member?.employeeId || ''}]` }
+                )));
                 // Group students by their class (class field may be "class" or "grade_level")
                 const groups = {};
                 for (const s of students) {
-                    const cls = (s.class || s.grade_level || s.class_level || 'Unclassified') || 'Unclassified'
-                    const key = String(cls).trim() || 'Unclassified'
-                    if (!groups[key]) groups[key] = []
-                    groups[key].push(s)
+                    const cls = (s.class || s.grade_level || s.class_level || 'Unclassified') || 'Unclassified';
+                    const key = String(cls).trim() || 'Unclassified';
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(s);
                 }
-
-                // Ensure all standard classes exist so UI shows tabs even if empty
-                for (const c of STANDARD_CLASSES) if (!groups[c]) groups[c] = []
-
-                setStudentsByClass(groups)
-                // if there are no students in selectedClass, keep default '9' but will show empty list
+                for (const c of STANDARD_CLASSES) if (!groups[c]) groups[c] = [];
+                setStudentsByClass(groups);
+            } catch (err) {
+                console.log(err);
             }
-            catch (err) {
-                console.log(err)
-            }
-        }
-        getMembers()
-    }, [STANDARD_CLASSES])
+        };
+        getMembers();
+    }, [STANDARD_CLASSES]);
 
     useEffect(() => {
         const getMemberDetails = async () => {
-            if(memberId !== null){
+            if (memberId !== null) {
                 try {
-                    const response = await axios.get(API + '/students/getstudent/' + memberId)
-                    setMemberDetails(response.data)
-                }
-                catch (err) {
-                    console.log("Error in fetching the member details", err)
+                    const response = await axios.get(API + '/students/' + memberId);
+                    setMemberDetails(response.data);
+                } catch (err) {
+                    console.log("Error in fetching the member details", err);
                 }
             }
-        }
-        getMemberDetails()
-    }, [memberId])
+        };
+        getMemberDetails();
+    }, [memberId]);
 
 
     return (

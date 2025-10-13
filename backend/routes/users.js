@@ -2,7 +2,25 @@ import express from "express";
 import Student from "../models/Student.js";
 import bcrypt from 'bcrypt';
 
-const router = express.Router()
+const router = express.Router();
+// Search students by name, admissionId, or employeeId
+router.get('/search', async (req, res) => {
+    try {
+        const query = (req.query.q || '').trim();
+        if (!query) return res.status(200).json([]);
+        const regex = new RegExp(query, 'i');
+        const students = await Student.find({
+            $or: [
+                { userFullName: { $regex: regex } },
+                { admissionId: { $regex: regex } },
+                { employeeId: { $regex: regex } }
+            ]
+        }).limit(20);
+        res.status(200).json(students);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
 
 /* Getting user by id */
 router.get("/getstudent/:id", async (req, res) => {

@@ -38,51 +38,49 @@ function AddMember() {
 
     //Add a Student
     const addMember = async (e) => {
-        e.preventDefault()
-        setIsLoading(true)
-        if (userFullName !== null && userType !== null && age !== null && dobString !== null && gender !== null && address !== null && mobileNumber !== null && email !== null && password !== null) {
+        e.preventDefault();
+        setIsLoading(true);
+        if (userFullName && userType && age && dobString && gender && address && mobileNumber && email && password) {
             const userData = {
-                userType: userType,
-                userFullName: userFullName,
-                admissionId: admissionId,
-                employeeId: employeeId,
-                age: age,
+                userType,
+                userFullName,
+                admissionId,
+                employeeId,
+                age: Number(age),
                 dob: dobString,
-                gender: gender,
-                address: address,
-                mobileNumber: mobileNumber,
-                email: email,
-                password: password
-            }
+                gender,
+                address,
+                mobileNumber,
+                email,
+                password
+            };
             try {
-                const response = await axios.post(API_URL + "api/auth/register", userData)
+                const response = await axios.post(API_URL + "api/auth/register", userData);
                 if (recentAddedMembers.length >= 5) {
-                    recentAddedMembers.splice(-1)
+                    recentAddedMembers.splice(-1);
                 }
-                setRecentAddedMembers([response.data, ...recentAddedMembers])
-                setUserFullName(null)
-                setUserType("Student")
-                setAdmissionId(null)
-                setEmployeeId(null)
-                setAddress(null)
-                setMobileNumber(null)
-                setEmail(null)
-                setPassword(null)
-                setGender(null)
-                setAge(null)
-                setDob(null)
-                setDobString(null)
-                alert("Member Added")
+                setRecentAddedMembers([response.data, ...recentAddedMembers]);
+                setUserFullName("");
+                setUserType("");
+                setAdmissionId("");
+                setEmployeeId("");
+                setAddress("");
+                setMobileNumber("");
+                setEmail("");
+                setPassword("");
+                setGender("");
+                setAge("");
+                setDob(null);
+                setDobString("");
+                alert("Member Added");
+            } catch (err) {
+                console.log(err);
             }
-            catch (err) {
-                console.log(err)
-            }
+        } else {
+            alert("All the fields must be filled");
         }
-        else {
-            alert("All the fields must be filled")
-        }
-        setIsLoading(false)
-    }
+        setIsLoading(false);
+    };
 
     //Fetch Members
     useEffect(() => {

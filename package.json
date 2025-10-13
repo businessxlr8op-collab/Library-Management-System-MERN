@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.2.3",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.19.1"
+    "mongoose": "^8.19.1",
+    "xlsx": "^0.18.5"
   }
 }

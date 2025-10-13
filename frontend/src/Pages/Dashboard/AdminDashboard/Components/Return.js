@@ -37,22 +37,18 @@ function Return() {
 
 
     /* Getting all active transactions */
-    useEffect(()=>{
-        const getAllTransactions = async () =>{
-            try{
-                const response = await axios.get(API_URL+"api/transactions/all-transactions")
-                setAllTransactions(response.data.sort((a, b) => Date.parse(a.toDate) - Date.parse(b.toDate)).filter((data) => {
-                    return data.transactionStatus === "Active"
-                }))
-                console.log("Okay")
-                setExecutionStatus(null)
+    useEffect(() => {
+        const getAllTransactions = async () => {
+            try {
+                const response = await axios.get(API_URL + "api/transactions/all-transactions");
+                setAllTransactions(response.data.filter((data) => data.transaction_status === "Active"));
+                setExecutionStatus(null);
+            } catch (err) {
+                console.log(err);
             }
-            catch(err){
-                console.log(err)
-            }
-        }
-        getAllTransactions()
-    },[API_URL,ExecutionStatus])
+        };
+        getAllTransactions();
+    }, [API_URL, ExecutionStatus]);
 
 
     const returnBook = async (transactionId,borrowerId,bookId,due) =>{

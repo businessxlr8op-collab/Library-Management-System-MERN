@@ -17,8 +17,10 @@ function AddTransaction() {
     const [borrowerDetails, setBorrowerDetails] = useState([])
     const [bookId, setBookId] = useState("")
     const [recentTransactions, setRecentTransactions] = useState([])
-    const [allMembers, setAllMembers] = useState([])
-    const [allBooks, setAllBooks] = useState([])
+    const [memberOptions, setMemberOptions] = useState([]);
+    const [bookOptions, setBookOptions] = useState([]);
+    const [memberSearch, setMemberSearch] = useState("");
+    const [bookSearch, setBookSearch] = useState("");
 
     const [fromDate, setFromDate] = useState(null)
     const [fromDateString, setFromDateString] = useState(null)
@@ -35,61 +37,43 @@ function AddTransaction() {
 
     /* Adding a Transaction */
     const addTransaction = async (e) => {
-        e.preventDefault()
-        setIsLoading(true)
+        e.preventDefault();
+        setIsLoading(true);
         if (bookId !== "" && borrowerId !== "" && transactionType !== "" && fromDate !== null && toDate !== null) {
-        const borrower_details = await axios.get(API_URL + "api/students/getstudent/" + borrowerId)
-            const book_details = await axios.get(API_URL + "api/books/getbook/" + bookId)
-            
-            /* Checking weather the book is available or not */
-            if ((book_details.data.bookCountAvailable > 0 && (transactionType === "Issued" || transactionType === "Reserved")) || (book_details.data.bookCountAvailable === 0 && transactionType === "Reserved")) {
-                const transactionData = {
-                    bookId: bookId,
-                    borrowerId: borrowerId,
-                    borrowerName: borrower_details.data.userFullName,
-                    bookName: book_details.data.bookName,
-                    transactionType: transactionType,
-                    fromDate: fromDateString,
-                    toDate: toDateString,
-                    isAdmin: user.isAdmin
+            try {
+                // Fetch member and book details using correct endpoints
+                const borrower_details = await axios.get(API_URL + `api/students/${borrowerId}`);
+                const book_details = await axios.get(API_URL + `api/books/${bookId}`);
+                const book = book_details.data.data;
+                // Check book availability
+                if (book.available > 0) {
+                    const transactionData = {
+                        student_id: borrowerId,
+                        book_id: bookId,
+                        issued_by: user?.userFullName || "Admin",
+                        role: user?.role || "Admin"
+                    };
+                    const response = await axios.post(API_URL + "api/transactions/add-transaction", transactionData);
+                    setRecentTransactions([response.data, ...recentTransactions]);
+                    setBorrowerId("");
+                    setBookId("");
+                    setTransactionType("");
+                    setFromDate(null);
+                    setToDate(null);
+                    setFromDateString(null);
+                    setToDateString(null);
+                    alert("Transaction was Successfull 🎉");
+                } else {
+                    alert("The book is not available");
                 }
-                try {
-                    const response = await axios.post(API_URL + "api/transactions/add-transaction", transactionData)
-                    if (recentTransactions.length >= 5) {
-                        (recentTransactions.splice(-1))
-                    }
-                    await axios.put(API_URL + `api/students/${response.data._id}/move-to-activetransactions`, {
-                        userId: borrowerId,
-                        isAdmin: user.isAdmin
-                    })
-
-                    await axios.put(API_URL+"api/books/updatebook/"+bookId,{
-                        isAdmin:user.isAdmin,
-                        bookCountAvailable:book_details.data.bookCountAvailable - 1
-                    })
-
-                    setRecentTransactions([response.data, ...recentTransactions])
-                    setBorrowerId("")
-                    setBookId("")
-                    setTransactionType("")
-                    setFromDate(null)
-                    setToDate(null)
-                    setFromDateString(null)
-                    setToDateString(null)
-                    alert("Transaction was Successfull 🎉")
-                }
-                catch (err) {
-                    console.log(err)
-                }
+            } catch (err) {
+                console.log(err);
+                alert("Error processing transaction");
             }
-            else{
-                alert("The book is not available")
-            }
+        } else {
+            alert("Fields must not be empty");
         }
-        else {
-            alert("Fields must not be empty")
-        }
-        setIsLoading(false)
+        setIsLoading(false);
     }
 
 
@@ -130,31 +114,41 @@ function AddTransaction() {
     useEffect(() => {
         const getMembers = async () => {
             try {
-                const response = await axios.get(API_URL + "api/students/allstudents")
-                const all_members = await response.data.map(member => (
-                    { value: `${member?._id}`, text: `${member?.userType === "Student" ? `${member?.userFullName}[${member?.admissionId}]` : `${member?.userFullName}[${member?.employeeId}]`}` }
-                ))
-                setAllMembers(all_members)
+                let response;
+                if (memberSearch && memberSearch.length > 0) {
+                    response = await axios.get(API_URL + `api/students/search?q=${memberSearch}`);
+                } else {
+                    response = await axios.get(API_URL + "api/students/allstudents");
+                }
+                const all_members = response.data.map(member => ({
+                    value: `${member?._id}`,
+                    text: `${member?.userType === "Student" ? `${member?.userFullName}[${member?.admissionId}]` : `${member?.userFullName}[${member?.employeeId}]`}`
+                }));
+                setMemberOptions(all_members);
+            } catch (err) {
+                console.log(err);
             }
-            catch (err) {
-                console.log(err)
-            }
-        }
-        getMembers()
-    }, [API_URL])
+        };
+        getMembers();
+    }, [API_URL, memberSearch]);
 
 
     /* Fetching books */
     useEffect(() => {
-        const getallBooks = async () => {
-            const response = await axios.get(API_URL + "api/books/allbooks")
-            const allbooks = await response.data.map(book => (
-                { value: `${book._id}`, text: `${book.bookName}` }
-            ))
-            setAllBooks(allbooks)
-        }
-        getallBooks()
-    }, [API_URL])
+        const getBooks = async () => {
+            try {
+                const response = await axios.get(API_URL + `api/books?search=${bookSearch}&all=true`);
+                const allbooks = response.data.data.map(book => ({
+                    value: `${book._id}`,
+                    text: `${book.title}`
+                }));
+                setBookOptions(allbooks);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        getBooks();
+    }, [API_URL, bookSearch]);
 
 
     return (
@@ -165,12 +159,13 @@ function AddTransaction() {
                 <label className="transaction-form-label" htmlFor="borrowerId">Borrower<span className="required-field">*</span></label><br />
                 <div className='semanticdropdown'>
                     <Dropdown
-                        placeholder='Select Member'
+                        placeholder='Search Member'
                         fluid
                         search
                         selection
                         value={borrowerId}
-                        options={allMembers}
+                        options={memberOptions}
+                        onSearchChange={(e, { searchQuery }) => setMemberSearch(searchQuery)}
                         onChange={(event, data) => setBorrowerId(data.value)}
                     />
                 </div>
@@ -222,12 +217,13 @@ function AddTransaction() {
                 <label className="transaction-form-label" htmlFor="bookName">Book Name<span className="required-field">*</span></label><br />
                 <div className='semanticdropdown'>
                     <Dropdown
-                        placeholder='Select a Book'
+                        placeholder='Search Book'
                         fluid
                         search
                         selection
-                        options={allBooks}
                         value={bookId}
+                        options={bookOptions}
+                        onSearchChange={(e, { searchQuery }) => setBookSearch(searchQuery)}
                         onChange={(event, data) => setBookId(data.value)}
                     />
                 </div>
