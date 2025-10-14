@@ -38,7 +38,7 @@ function Footer() {
                 </div>
             </div>
             <div className='copyright-details'>
-                <p className='footer-copyright'>&#169; 2020 copyright all right reserved<br /><span>Designed with ❤️ by Satyam Sharma</span></p>
+                <p className='footer-copyright'>&#169; 2025 copyright all right reserved<br /><span>Designed with ❤️ by Satyam Sharma</span></p>
             </div>
         </div>
     )
