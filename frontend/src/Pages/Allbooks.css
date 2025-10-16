@@ -138,3 +138,12 @@
     background: #e5e7eb;
     transform: scale(0.97);
 }
+
+/* FORCE: Ensure all text on the Allbooks page is readable (black) regardless of global theme.
+   This intentionally uses high specificity and !important so that dark-theme variables do not
+   make text unreadable against the page's light cards/backgrounds. */
+.allbooks-container,
+.allbooks-container * {
+    color: #000 !important;
+    text-shadow: none !important;
+}
