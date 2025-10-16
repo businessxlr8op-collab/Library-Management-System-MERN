@@ -11,17 +11,28 @@ const api = axios.create({
 
 // Simple in-memory cache with sessionStorage persistence (cleared when tab is closed).
 const inMemoryCache = new Map();
+const CACHE_TTL_MS = parseInt(process.env.REACT_APP_BOOKS_CACHE_TTL_MS || String(1000 * 60 * 10), 10); // default 10m
+
 const sessionGet = (key) => {
   try {
     const v = sessionStorage.getItem(key);
-    return v ? JSON.parse(v) : null;
+    if (!v) return null;
+    const parsed = JSON.parse(v);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const { ts, payload } = parsed;
+    if (!ts || Date.now() - ts > CACHE_TTL_MS) {
+      try { sessionStorage.removeItem(key); } catch (e) {}
+      return null;
+    }
+    return payload;
   } catch (e) {
     return null;
   }
 };
 const sessionSet = (key, val) => {
   try {
-    sessionStorage.setItem(key, JSON.stringify(val));
+    const obj = { ts: Date.now(), payload: val };
+    sessionStorage.setItem(key, JSON.stringify(obj));
   } catch (e) {
     // ignore storage errors
   }
@@ -37,20 +48,24 @@ export const bookService = {
     const key = cacheKeyForParams(params);
     // Check in-memory first
     if (inMemoryCache.has(key)) {
-      return inMemoryCache.get(key);
+      const cached = inMemoryCache.get(key);
+      // cached is stored as { ts, payload } for in-memory as well
+      if (cached && cached.ts && Date.now() - cached.ts <= CACHE_TTL_MS) return cached.payload;
+      inMemoryCache.delete(key);
     }
     // Then check sessionStorage
     const s = sessionGet(key);
     if (s) {
-      inMemoryCache.set(key, s);
+      inMemoryCache.set(key, { ts: Date.now(), payload: s });
       return s;
     }
 
     // Not cached: fetch from API and store result in both caches
     const res = await api.get('/api/books', { params });
     const payload = res.data;
-    inMemoryCache.set(key, payload);
-    sessionSet(key, payload);
+  const storeObj = { ts: Date.now(), payload };
+  inMemoryCache.set(key, storeObj);
+  sessionSet(key, payload);
     return payload;
   },
   getBookById: async (id) => {
