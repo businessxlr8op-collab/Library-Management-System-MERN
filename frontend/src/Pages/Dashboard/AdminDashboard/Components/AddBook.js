@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import "../AdminDashboard.css"
 import axios from "axios"
+import { bookService } from '../../../../api/bookService'
 import { AuthContext } from '../../../../Context/AuthContext'
 import { Dropdown } from 'semantic-ui-react'
 
@@ -39,6 +40,8 @@ function AddBook() {
                 recentAddedBooks.splice(-1);
             }
             setRecentAddedBooks([response.data, ...recentAddedBooks]);
+            // Clear cached book lists so other pages can refetch fresh data when appropriate
+            try { bookService.clearCache(); } catch (e) {}
             setTitle("");
             setAuthor("");
             setAvailable(1);
@@ -54,8 +57,14 @@ function AddBook() {
 
     useEffect(() => {
         const getallBooks = async () => {
-            const response = await axios.get(API_URL + "api/books?all=true");
-            setRecentAddedBooks(response.data.data.slice(0, 5));
+            try {
+                const response = await bookService.getAllBooks({ all: true });
+                setRecentAddedBooks((response && response.data ? response.data.slice(0, 5) : []));
+            } catch (e) {
+                // fallback to direct axios if bookService fails
+                const response = await axios.get(API_URL + "api/books?all=true");
+                setRecentAddedBooks(response.data.data.slice(0, 5));
+            }
         };
         getallBooks();
     }, [API_URL]);
