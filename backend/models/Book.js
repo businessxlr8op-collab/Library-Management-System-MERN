@@ -29,4 +29,11 @@ const BookSchema = new mongoose.Schema({
     bookId: { type: String, default: null },
 }, { timestamps: true, collection: 'books' });
 
+// Indexes to speed up common queries: text index for title/author and single-field indexes for isbn and slNo.
+// Creating these indexes here ensures mongoose will try to create them on startup (if allowed by the DB user).
+BookSchema.index({ title: 'text', author: 'text' }, { name: 'TitleAuthorTextIdx' });
+BookSchema.index({ isbn: 1 }, { name: 'IsbnIdx' });
+BookSchema.index({ slNo: 1 }, { name: 'SlNoIdx' });
+BookSchema.index({ createdAt: -1 }, { name: 'CreatedAtIdx' });
+
 export default mongoose.model('Book', BookSchema);

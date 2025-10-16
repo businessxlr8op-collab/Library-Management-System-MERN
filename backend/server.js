@@ -126,6 +126,8 @@ const connectWithRetry = (retries = 5, delayMs = 2000) => {
     .connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: parseInt(process.env.MONGO_SERVER_SELECTION_TIMEOUT_MS || '5000', 10),
+      socketTimeoutMS: parseInt(process.env.MONGO_SOCKET_TIMEOUT_MS || '45000', 10),
     })
     .then(() => {
       try {
@@ -185,6 +187,9 @@ app.use((err, req, res, next) => {
 const server = app.listen(port, () => {
   console.log(`Server is running on PORT ${port}`);
 });
+
+// Set a server timeout to avoid hanging requests; default Node timeout is 2 minutes.
+server.setTimeout(parseInt(process.env.SERVER_TIMEOUT_MS || '60000', 10)); // 60s
 
 server.on('error', (err) => {
   if (err && err.code === 'EADDRINUSE') {

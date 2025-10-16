@@ -37,17 +37,20 @@ router.get('/', async (req, res) => {
         if (category) query.category = category;
         if (grade) query.grade_level = grade;
 
-        // If client asks for all results (admin/one-time import view), return the full set in one response.
-        // This is intentional for bulk UI rendering of ~4-5k rows. We still use countDocuments for totals.
+        // If client asks for all results, be defensive: cap to a reasonable maximum to avoid OOM/timeouts.
+        // Use lean() to avoid hydration overhead and maxTimeMS to abort long-running queries.
+        const MAX_FETCH_ALL = 5000; // safety cap
+        const maxTimeMS = parseInt(process.env.MONGO_QUERY_MAX_MS || '5000', 10); // default 5s
+
         let books;
         let totalBooks;
         if (fetchAll) {
-            // Return all documents matching the query in one query
-            books = await Book.find(query).sort({ createdAt: -1 }).exec();
-            totalBooks = books.length;
+            // Return up to MAX_FETCH_ALL documents matching the query
+            totalBooks = await Book.countDocuments(query);
+            books = await Book.find(query).sort({ createdAt: -1 }).limit(MAX_FETCH_ALL).maxTimeMS(maxTimeMS).lean();
         } else {
             [books, totalBooks] = await Promise.all([
-                Book.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+                Book.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).maxTimeMS(maxTimeMS).lean(),
                 Book.countDocuments(query)
             ]);
         }
@@ -60,7 +63,7 @@ router.get('/', async (req, res) => {
             // Fallback: return sample data so frontend can still function while DB/auth is being fixed
             try {
                 const samplePath = path.join(process.cwd(), 'backend', 'data', 'sampleBooks.json');
-                const raw = fs.readFileSync(samplePath, 'utf8');
+                const raw = await fs.promises.readFile(samplePath, 'utf8');
                 const sample = JSON.parse(raw);
                 return res.json({ success: true, data: sample, totalPages: 1, currentPage: 1, totalBooks: sample.length });
             } catch (e) {
